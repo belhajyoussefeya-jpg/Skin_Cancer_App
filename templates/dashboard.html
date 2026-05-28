@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard · SKIN.AI{% endblock %}
+
+{% block content %}
+
+<div class="page-hero fade-up">
+  <h1>Bonjour, <span class="gradient-text">{{ username }}</span> 👋</h1>
+  <p>Tableau de bord analytique · Vue d'ensemble en temps réel</p>
+</div>
+
+<!-- Stats grid -->
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-lg-3">
+    <div class="stat-card cyan fade-up fade-up-1">
+      <div class="stat-icon"><i class="bi bi-clipboard2-pulse"></i></div>
+      <div class="stat-label">Total analyses</div>
+      <div class="stat-value" data-counter="{{ stats.total }}">0</div>
+      <div class="stat-trend">+{{ stats.today }} aujourd'hui</div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-3">
+    <div class="stat-card green fade-up fade-up-2">
+      <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+      <div class="stat-label">Cas bénins</div>
+      <div class="stat-value" data-counter="{{ stats.benign }}">0</div>
+      <div class="stat-trend">
+        {{ ((stats.benign / stats.total * 100) if stats.total else 0) | round(1) }}% du total
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-3">
+    <div class="stat-card pink fade-up fade-up-3">
+      <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      <div class="stat-label">Cas malins</div>
+      <div class="stat-value" data-counter="{{ stats.malignant }}">0</div>
+      <div class="stat-trend">
+        {{ stats.malignant_rate }}% du total
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-3">
+    <div class="stat-card purple fade-up fade-up-4">
+      <div class="stat-icon"><i class="bi bi-person-fill-gear"></i></div>
+      <div class="stat-label">Âge moyen</div>
+      <div class="stat-value">
+        <span data-counter="{{ stats.avg_age | int }}">0</span>
+        <span style="font-size: 1.2rem; color: var(--text-muted);">ans</span>
+      </div>
+      <div class="stat-trend">Patients analysés</div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts row -->
+<div class="row g-3 mb-4">
+  <!-- Time series chart -->
+  <div class="col-lg-8">
+    <div class="glass-card fade-up fade-up-5">
+      <div class="card-header-neon d-flex justify-content-between align-items-center">
+        <h4><i class="bi bi-graph-up text-info"></i> Activité des 7 derniers jours</h4>
+        <span class="badge-benign" style="font-size: 0.7rem;">LIVE</span>
+      </div>
+      <div class="p-4">
+        <div class="chart-wrapper">
+          <canvas id="timeChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Distribution donut chart -->
+  <div class="col-lg-4">
+    <div class="glass-card fade-up fade-up-6 h-100">
+      <div class="card-header-neon">
+        <h4><i class="bi bi-pie-chart-fill text-info"></i> Distribution</h4>
+      </div>
+      <div class="p-4 d-flex flex-column align-items-center justify-content-center">
+        <div class="chart-wrapper" style="height: 220px; width: 100%;">
+          <canvas id="distChart"></canvas>
+        </div>
+        <div class="row w-100 mt-3 text-center">
+          <div class="col-6">
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Bénin</div>
+            <div style="font-size: 1.4rem; font-weight: 700; color: var(--neon-green);">{{ stats.benign }}</div>
+          </div>
+          <div class="col-6">
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Malin</div>
+            <div style="font-size: 1.4rem; font-weight: 700; color: var(--neon-pink);">{{ stats.malignant }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick actions + recent -->
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="glass-card fade-up fade-up-5 h-100">
+      <div class="card-header-neon">
+        <h4><i class="bi bi-lightning-fill text-warning"></i> Actions rapides</h4>
+      </div>
+      <div class="p-4 d-flex flex-column gap-3">
+        <a href="{{ url_for('predict') }}" class="btn btn-neon btn-lg">
+          <i class="bi bi-plus-circle-fill"></i> Nouvelle analyse IA
+        </a>
+        <a href="{{ url_for('patients') }}" class="btn btn-outline-neon">
+          <i class="bi bi-people-fill"></i> Voir tous les patients
+        </a>
+        <a href="{{ url_for('logout') }}" class="btn btn-ghost">
+          <i class="bi bi-box-arrow-right"></i> Déconnexion
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="glass-card fade-up fade-up-6 h-100">
+      <div class="card-header-neon d-flex justify-content-between align-items-center">
+        <h4><i class="bi bi-clock-history text-info"></i> Derniers patients</h4>
+        <a href="{{ url_for('patients') }}" class="btn btn-ghost btn-sm">Tout voir <i class="bi bi-arrow-right"></i></a>
+      </div>
+      <div>
+        {% if stats.recent %}
+          <table class="table-neon">
+            <thead>
+              <tr>
+                <th>Patient</th>
+                <th>Âge</th>
+                <th>Résultat</th>
+                <th>Probabilité</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in stats.recent %}
+              <tr>
+                <td><strong>{{ p.name }}</strong></td>
+                <td class="text-muted-2">{{ p.age }} ans</td>
+                <td>
+                  {% if p.result == 'Malin' %}
+                    <span class="badge-malign"><i class="bi bi-exclamation-triangle-fill"></i> Malin</span>
+                  {% else %}
+                    <span class="badge-benign"><i class="bi bi-check-circle-fill"></i> Bénin</span>
+                  {% endif %}
+                </td>
+                <td style="font-family: 'JetBrains Mono', monospace; color: var(--neon-cyan);">
+                  {{ "%.1f"|format(p.probability) }}%
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p>Aucune analyse pour le moment</p>
+            <a href="{{ url_for('predict') }}" class="btn btn-neon">
+              <i class="bi bi-plus-circle"></i> Première analyse
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Animated counter
+function animateCounter(el, target) {
+  const duration = 1200;
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(target * ease);
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+document.querySelectorAll('[data-counter]').forEach(el => {
+  const target = parseFloat(el.dataset.counter) || 0;
+  animateCounter(el, target);
+});
+
+// Common chart styling
+Chart.defaults.color = '#b8bdd1';
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.borderColor = 'rgba(120, 140, 200, 0.1)';
+
+// Time series chart
+const timeData = {{ stats.timeseries | tojson }};
+const ctx1 = document.getElementById('timeChart').getContext('2d');
+
+const grad1 = ctx1.createLinearGradient(0, 0, 0, 280);
+grad1.addColorStop(0, 'rgba(0, 255, 157, 0.4)');
+grad1.addColorStop(1, 'rgba(0, 255, 157, 0)');
+
+const grad2 = ctx1.createLinearGradient(0, 0, 0, 280);
+grad2.addColorStop(0, 'rgba(255, 46, 126, 0.4)');
+grad2.addColorStop(1, 'rgba(255, 46, 126, 0)');
+
+new Chart(ctx1, {
+  type: 'line',
+  data: {
+    labels: timeData.map(d => d.day),
+    datasets: [
+      {
+        label: 'Bénin',
+        data: timeData.map(d => d.benign),
+        borderColor: '#00ff9d',
+        backgroundColor: grad1,
+        tension: 0.4,
+        fill: true,
+        borderWidth: 2.5,
+        pointBackgroundColor: '#00ff9d',
+        pointBorderColor: '#060814',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      },
+      {
+        label: 'Malin',
+        data: timeData.map(d => d.malignant),
+        borderColor: '#ff2e7e',
+        backgroundColor: grad2,
+        tension: 0.4,
+        fill: true,
+        borderWidth: 2.5,
+        pointBackgroundColor: '#ff2e7e',
+        pointBorderColor: '#060814',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: { usePointStyle: true, padding: 15, font: { size: 12, weight: '600' } }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(15, 20, 40, 0.95)',
+        borderColor: 'rgba(0, 240, 255, 0.3)',
+        borderWidth: 1,
+        padding: 12,
+        titleFont: { size: 13, weight: '700' },
+        bodyFont: { size: 12 },
+        cornerRadius: 8,
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+      y: {
+        beginAtZero: true,
+        grid: { color: 'rgba(120, 140, 200, 0.06)' },
+        ticks: { stepSize: 1, font: { size: 11 } }
+      }
+    },
+    animation: { duration: 1500, easing: 'easeOutCubic' }
+  }
+});
+
+// Distribution donut chart
+const ctx2 = document.getElementById('distChart').getContext('2d');
+new Chart(ctx2, {
+  type: 'doughnut',
+  data: {
+    labels: ['Bénin', 'Malin'],
+    datasets: [{
+      data: [{{ stats.benign }}, {{ stats.malignant }}],
+      backgroundColor: ['#00ff9d', '#ff2e7e'],
+      borderColor: ['#0d1126', '#0d1126'],
+      borderWidth: 3,
+      hoverOffset: 10,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '70%',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: 'rgba(15, 20, 40, 0.95)',
+        borderColor: 'rgba(0, 240, 255, 0.3)',
+        borderWidth: 1,
+        padding: 12,
+        cornerRadius: 8,
+      }
+    },
+    animation: { animateRotate: true, animateScale: true, duration: 1500 }
+  }
+});
+</script>
+{% endblock %}

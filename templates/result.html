@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Résultat · SKIN.AI{% endblock %}
+
+{% block content %}
+
+<div class="page-hero fade-up">
+  <h1>Résultat de l'<span class="gradient-text">analyse IA</span></h1>
+  <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; letter-spacing: 1px;">
+    > DIAGNOSTIC GENERATED · {{ result|upper }} · {{ probability }}% CONFIDENCE
+  </p>
+</div>
+
+<div class="row g-4 justify-content-center">
+  <!-- Left: image -->
+  <div class="col-lg-5">
+    <div class="glass-card fade-up fade-up-1 text-center p-4">
+      <div class="card-header-neon mb-4" style="margin: -1.5rem -1.5rem 1.5rem; border-radius: 16px 16px 0 0;">
+        <h4><i class="bi bi-image-fill text-info"></i> Image analysée</h4>
+      </div>
+      <img src="{{ url_for('static', filename=image_path) }}"
+           alt="Lésion cutanée" class="result-image">
+      <div class="mt-3">
+        <span class="badge-benign" style="background: rgba(0, 240, 255, 0.1); color: var(--neon-cyan); border-color: var(--border-glow); font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;">
+          224 × 224 · VGG16 · ANALYZED
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: diagnostic -->
+  <div class="col-lg-7">
+    <div class="glass-card fade-up fade-up-2 h-100">
+      <div class="card-header-neon">
+        <h4><i class="bi bi-clipboard2-pulse-fill text-info"></i> Rapport de diagnostic</h4>
+      </div>
+
+      <div class="p-4">
+        <!-- Patient info -->
+        <h6 class="text-muted-2 mb-3" style="text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.75rem;">
+          <i class="bi bi-person"></i> Patient
+        </h6>
+        <div class="info-row">
+          <span class="label">Nom</span>
+          <span class="value">{{ name }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Âge</span>
+          <span class="value">{{ age }} ans</span>
+        </div>
+
+        <div class="divider-line"></div>
+
+        <!-- Diagnosis -->
+        <h6 class="text-muted-2 mb-3" style="text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.75rem;">
+          <i class="bi bi-cpu"></i> Diagnostic IA
+        </h6>
+
+        <div class="text-center my-4">
+          <div class="result-badge-large {% if result == 'Malin' %}malign{% else %}benign{% endif %} fade-up fade-up-3">
+            {% if result == 'Malin' %}
+              <i class="bi bi-exclamation-triangle-fill"></i>
+            {% else %}
+              <i class="bi bi-shield-check"></i>
+            {% endif %}
+            {{ result|upper }}
+          </div>
+        </div>
+
+        <!-- Confidence meter -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted-2" style="text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px;">
+            Niveau de confiance
+          </span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: {% if result == 'Malin' %}var(--neon-pink){% else %}var(--neon-green){% endif %};">
+            {{ probability }}%
+          </span>
+        </div>
+
+        <div class="confidence-meter">
+          <div class="confidence-meter-fill {% if result == 'Malin' %}malign{% else %}benign{% endif %}"
+               id="confFill" data-target="{{ probability }}"></div>
+        </div>
+
+        <!-- Recommendation -->
+        <div class="alert {% if result == 'Malin' %}alert-danger{% else %}alert-info{% endif %} mt-4 mb-0">
+          <strong><i class="bi bi-info-circle"></i>
+            {% if result == 'Malin' %}
+              Recommandation médicale
+            {% else %}
+              Information
+            {% endif %}
+          </strong>
+          <p class="mb-0 mt-2 small">
+            {% if result == 'Malin' %}
+              Ce résultat suggère une lésion potentiellement maligne. Une consultation
+              dermatologique spécialisée est <strong>fortement recommandée</strong> pour
+              confirmation et prise en charge.
+            {% else %}
+              La lésion semble bénigne. Continuez la surveillance dermatologique régulière
+              et consultez un médecin en cas de changement d'aspect.
+            {% endif %}
+          </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex gap-2 mt-4 justify-content-end flex-wrap">
+          <a href="{{ url_for('patients') }}" class="btn btn-ghost">
+            <i class="bi bi-clock-history"></i> Historique
+          </a>
+          {% if patient_id %}
+          <a href="{{ url_for('patient_pdf', patient_id=patient_id) }}"
+             class="btn btn-outline-neon">
+            <i class="bi bi-file-earmark-pdf"></i> Télécharger PDF
+          </a>
+          {% endif %}
+          <a href="{{ url_for('predict') }}" class="btn btn-neon">
+            <i class="bi bi-plus-circle"></i> Nouvelle analyse
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Animate confidence meter
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const fill = document.getElementById('confFill');
+    fill.style.width = fill.dataset.target + '%';
+  }, 400);
+});
+</script>
+{% endblock %}

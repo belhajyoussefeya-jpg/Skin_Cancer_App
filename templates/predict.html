@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Nouvelle analyse · SKIN.AI{% endblock %}
+
+{% block content %}
+
+<div class="page-hero fade-up">
+  <h1>Nouvelle <span class="gradient-text">analyse IA</span></h1>
+  <p>Téléchargez une image de lésion cutanée pour diagnostic automatique</p>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="glass-card fade-up fade-up-1">
+      <div class="card-header-neon">
+        <h4><i class="bi bi-clipboard2-plus-fill text-info"></i> Informations & image</h4>
+      </div>
+      <div class="p-4">
+        <form id="predictForm" method="POST" action="{{ url_for('predict') }}" enctype="multipart/form-data">
+
+          <!-- Patient info -->
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              <label for="name" class="form-label">
+                <i class="bi bi-person-fill"></i> Nom du patient
+              </label>
+              <input type="text" class="form-control" id="name" name="name"
+                     placeholder="Ex: Ahmed Ben Ali" required>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label for="age" class="form-label">
+                <i class="bi bi-calendar-event"></i> Âge
+              </label>
+              <input type="number" class="form-control" id="age" name="age"
+                     min="1" max="130" placeholder="35" required>
+            </div>
+          </div>
+
+          <!-- Upload zone -->
+          <label class="form-label">
+            <i class="bi bi-image-fill"></i> Image de la lésion
+          </label>
+          <div class="upload-zone" id="uploadZone">
+            <i class="bi bi-cloud-arrow-up-fill"></i>
+            <span class="upload-label">Glissez-déposez ou cliquez pour parcourir</span>
+            <span class="upload-hint">PNG, JPG, JPEG, BMP, GIF · Max 16 MB</span>
+            <input type="file" id="image" name="image"
+                   accept=".png,.jpg,.jpeg,.bmp,.gif" required>
+          </div>
+
+          <!-- Image preview -->
+          <div class="text-center mt-4" id="previewContainer" style="display: none;">
+            <div class="preview-wrapper scanning">
+              <img id="preview" src="" alt="">
+            </div>
+            <div class="mt-2 text-muted-2" id="fileName" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;"></div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="d-flex justify-content-between mt-4 gap-2">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">
+              <i class="bi bi-arrow-left"></i> Annuler
+            </a>
+            <button type="submit" class="btn btn-neon">
+              <i class="bi bi-cpu"></i> Lancer le diagnostic IA
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">ANALYSE EN COURS...</div>
+  <div class="loading-subtext" id="loadingSub">Initialisation du modèle VGG16</div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const fileInput = document.getElementById('image');
+const uploadZone = document.getElementById('uploadZone');
+const preview = document.getElementById('preview');
+const previewContainer = document.getElementById('previewContainer');
+const fileName = document.getElementById('fileName');
+const form = document.getElementById('predictForm');
+const overlay = document.getElementById('loadingOverlay');
+const loadingSub = document.getElementById('loadingSub');
+
+// File input change → preview
+function handleFile(file) {
+  if (!file) return;
+  preview.src = URL.createObjectURL(file);
+  fileName.textContent = '> ' + file.name;
+  previewContainer.style.display = 'block';
+  previewContainer.classList.add('fade-up');
+}
+
+fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+
+// Drag & drop
+['dragenter', 'dragover'].forEach(ev => {
+  uploadZone.addEventListener(ev, e => {
+    e.preventDefault(); e.stopPropagation();
+    uploadZone.classList.add('dragover');
+  });
+});
+['dragleave', 'drop'].forEach(ev => {
+  uploadZone.addEventListener(ev, e => {
+    e.preventDefault(); e.stopPropagation();
+    uploadZone.classList.remove('dragover');
+  });
+});
+uploadZone.addEventListener('drop', e => {
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    fileInput.files = e.dataTransfer.files;
+    handleFile(file);
+  }
+});
+
+// Loading overlay on submit + cycling messages
+const messages = [
+  'Initialisation du modèle VGG16',
+  'Prétraitement de l\'image (224x224)',
+  'Extraction des caractéristiques deep',
+  'Classification neuronale en cours',
+  'Calcul de la probabilité',
+  'Finalisation du diagnostic'
+];
+
+form.addEventListener('submit', () => {
+  overlay.classList.add('active');
+  let i = 0;
+  setInterval(() => {
+    i = (i + 1) % messages.length;
+    loadingSub.textContent = messages[i];
+  }, 900);
+});
+</script>
+{% endblock %}

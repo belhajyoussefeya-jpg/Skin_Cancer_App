@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Modifier patient · SKIN.AI{% endblock %}
+
+{% block content %}
+
+<div class="page-hero fade-up">
+  <h1>Modifier <span class="gradient-text">patient</span></h1>
+  <p>#{{ '%03d' % patient.id }} &middot; mise à jour des informations</p>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="glass-card fade-up fade-up-1">
+      <div class="card-header-neon">
+        <h4><i class="bi bi-pencil-square text-info"></i> Informations patient</h4>
+      </div>
+      <form method="post" class="p-4">
+        <div class="mb-3">
+          <label class="form-label text-muted-2" style="text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem;">
+            Nom complet
+          </label>
+          <input type="text" name="name" class="form-control"
+                 value="{{ patient.name }}" required maxlength="100">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-muted-2" style="text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem;">
+            Âge
+          </label>
+          <input type="number" name="age" class="form-control"
+                 value="{{ patient.age }}" required min="1" max="130">
+        </div>
+
+        <div class="info-row">
+          <span class="label">Diagnostic</span>
+          <span class="value">{{ patient.result }} ({{ "%.1f"|format(patient.probability) }}%)</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Date</span>
+          <span class="value">
+            {{ patient.created_at.strftime('%d/%m/%Y %H:%M') if patient.created_at else '-' }}
+          </span>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end mt-4">
+          <a href="{{ url_for('patients') }}" class="btn btn-ghost">
+            <i class="bi bi-arrow-left"></i> Annuler
+          </a>
+          <button type="submit" class="btn btn-neon">
+            <i class="bi bi-check-circle"></i> Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

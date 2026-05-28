@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Patients · SKIN.AI{% endblock %}
+
+{% block content %}
+
+<div class="page-hero fade-up">
+  <h1>Base <span class="gradient-text">patients</span></h1>
+  <p>Historique complet des analyses · {{ patients|length }} enregistrement(s)</p>
+</div>
+
+<div class="glass-card fade-up fade-up-1">
+  <div class="card-header-neon d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h4><i class="bi bi-database-fill text-info"></i> Tous les diagnostics</h4>
+    <a href="{{ url_for('predict') }}" class="btn btn-neon btn-sm">
+      <i class="bi bi-plus-circle"></i> Nouvelle analyse
+    </a>
+  </div>
+
+  <form method="get" action="{{ url_for('patients') }}" class="d-flex flex-wrap gap-2 p-3 align-items-center">
+    <div class="input-group input-group-sm" style="max-width: 320px;">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input type="text" name="q" value="{{ q or '' }}" class="form-control"
+             placeholder="Rechercher un nom...">
+    </div>
+    <select name="filter" class="form-select form-select-sm" style="max-width: 200px;">
+      <option value="all"       {% if current_filter == 'all' %}selected{% endif %}>Tous</option>
+      <option value="benign"    {% if current_filter == 'benign' %}selected{% endif %}>Bénin uniquement</option>
+      <option value="malignant" {% if current_filter == 'malignant' %}selected{% endif %}>Malin uniquement</option>
+    </select>
+    <button type="submit" class="btn btn-outline-neon btn-sm">
+      <i class="bi bi-funnel"></i> Filtrer
+    </button>
+    {% if q or current_filter != 'all' %}
+      <a href="{{ url_for('patients') }}" class="btn btn-ghost btn-sm">
+        <i class="bi bi-x-circle"></i> Réinitialiser
+      </a>
+    {% endif %}
+  </form>
+
+  <div>
+    {% if patients %}
+      <div class="table-responsive">
+        <table class="table-neon">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Image</th>
+              <th>Patient</th>
+              <th>Âge</th>
+              <th>Résultat</th>
+              <th>Confiance</th>
+              <th>Date</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in patients %}
+            <tr class="fade-up" style="animation-delay: {{ loop.index0 * 0.03 }}s;">
+              <td style="font-family: 'JetBrains Mono', monospace; color: var(--text-muted);">
+                #{{ '%03d' % p.id }}
+              </td>
+              <td>
+                <img src="{{ url_for('static', filename=p.image_path) }}"
+                     alt="lésion" class="table-thumb">
+              </td>
+              <td><strong>{{ p.name }}</strong></td>
+              <td class="text-muted-2">{{ p.age }} ans</td>
+              <td>
+                {% if p.result == 'Malin' %}
+                  <span class="badge-malign"><i class="bi bi-exclamation-triangle-fill"></i> Malin</span>
+                {% else %}
+                  <span class="badge-benign"><i class="bi bi-check-circle-fill"></i> Bénin</span>
+                {% endif %}
+              </td>
+              <td style="min-width: 140px;">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="progress-neon" style="flex: 1;">
+                    <div class="progress-neon-bar {% if p.result == 'Malin' %}malign{% else %}benign{% endif %}"
+                         style="width: {{ p.probability }}%;"></div>
+                  </div>
+                  <small style="font-family: 'JetBrains Mono', monospace; color: var(--text-secondary); min-width: 45px; text-align: right;">
+                    {{ "%.1f"|format(p.probability) }}%
+                  </small>
+                </div>
+              </td>
+              <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">
+                {{ p.created_at.strftime('%d/%m/%Y %H:%M') if p.created_at else '-' }}
+              </td>
+              <td class="text-end" style="white-space: nowrap;">
+                <a href="{{ url_for('patient_pdf', patient_id=p.id) }}"
+                   class="btn btn-sm btn-ghost" title="Télécharger PDF">
+                  <i class="bi bi-file-earmark-pdf"></i>
+                </a>
+                <a href="{{ url_for('patient_edit', patient_id=p.id) }}"
+                   class="btn btn-sm btn-ghost" title="Modifier">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+                <form method="post" action="{{ url_for('patient_delete', patient_id=p.id) }}"
+                      style="display:inline"
+                      onsubmit="return confirm('Supprimer définitivement ce patient ?');">
+                  <button type="submit" class="btn btn-sm btn-ghost text-danger" title="Supprimer">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <i class="bi bi-database"></i>
+        <p>Aucune analyse enregistrée pour le moment</p>
+        <a href="{{ url_for('predict') }}" class="btn btn-neon">
+          <i class="bi bi-plus-circle"></i> Première analyse
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

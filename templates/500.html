@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}500 · SKIN.AI{% endblock %}
+
+{% block content %}
+<div class="text-center py-5 fade-up">
+  <div style="font-family: 'Space Grotesk', sans-serif; font-size: 8rem; font-weight: 800; line-height: 1; color: var(--neon-pink); text-shadow: 0 0 30px var(--neon-pink);"
+       class="float">500</div>
+  <h3 class="mt-3">Erreur système</h3>
+  <p class="text-muted-2">Le serveur a rencontré une anomalie critique.</p>
+  <a href="{{ url_for('index') }}" class="btn btn-neon mt-3">
+    <i class="bi bi-house-door"></i> Retour à la base
+  </a>
+</div>
+{% endblock %}
