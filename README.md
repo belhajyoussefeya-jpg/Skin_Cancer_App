@@ -244,18 +244,4 @@ PREPROCESSING_MODE = 'rescale'   # ou 'vgg16' ou 'raw'
 MALIGNANT_INDEX = 1              # ou 0 si les classes sont inversées
 ```
 
----
 
-## ⚠️ Note pédagogique
-
-Ce projet stocke les mots de passe **en clair** dans la base de données (conformément au sujet du TD à des fins pédagogiques).
-**Ne jamais faire ça en production** — utilisez `werkzeug.security.generate_password_hash` et `check_password_hash` pour hacher les mots de passe avec un sel cryptographique.
-
-De même, la `secret_key` Flask, la clé API et les identifiants MySQL doivent être chargés depuis des **variables d'environnement** (`.env` + `python-dotenv`) et **jamais commit** dans le dépôt.
-
----
-
-## 📜 Licence
-
-Projet académique réalisé dans le cadre du module **Introduction à l'IA** à l'**ENSTAB** (2025/2026).
-Usage pédagogique uniquement — ne remplace pas un diagnostic médical.
