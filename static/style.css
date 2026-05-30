@@ -41,6 +41,33 @@ html, body {
   color: var(--text-primary);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+/* Custom neon scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--neon-cyan), var(--neon-purple));
+  border-radius: 999px;
+  border: 2px solid var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb:hover { box-shadow: 0 0 10px var(--neon-cyan); }
+html { scrollbar-color: var(--neon-cyan) var(--bg-secondary); scrollbar-width: thin; }
+
+/* Text selection */
+::selection { background: rgba(0, 240, 255, 0.35); color: #fff; }
+
+/* Accessible keyboard focus */
+:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.45),
+              0 4px 20px rgba(0, 240, 255, 0.25);
 }
 
 /* Animated background grid + orbs */
@@ -149,6 +176,24 @@ code {
 
 .navbar-toggler {
   border-color: var(--border-glow);
+  padding: 0.35rem 0.6rem;
+}
+
+.navbar-toggler:focus { box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.25); }
+
+/* Mobile collapsed menu background (Bootstrap collapse) */
+@media (max-width: 991.98px) {
+  .navbar-neon .navbar-collapse {
+    background: rgba(6, 8, 20, 0.95);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.75rem 0.5rem;
+    margin-top: 0.75rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  }
+  .navbar-neon .navbar-nav .nav-link { padding: 0.65rem 1rem !important; }
 }
 
 /* ----------------------------- Cards ----------------------------- */
@@ -817,6 +862,60 @@ footer .gradient-text { font-weight: 600; }
 /* Responsive */
 @media (max-width: 768px) {
   .stat-card .stat-value { font-size: 1.8rem; }
-  .page-hero h1 { font-size: 1.6rem; }
+  .stat-card { padding: 1.1rem; }
+  .page-hero h1 { font-size: 1.55rem; }
+  .page-hero p { font-size: 0.9rem; }
   .login-card { padding: 2rem 1.5rem; }
+  .login-logo { width: 64px; height: 64px; font-size: 2rem; }
+  .upload-zone { padding: 2rem 1rem; }
+  .upload-zone i { font-size: 2.4rem; }
+  .result-badge-large { font-size: 1.05rem; padding: 0.55rem 1.1rem; }
+  .table-neon thead th,
+  .table-neon tbody td { padding: 0.65rem 0.5rem; font-size: 0.85rem; }
+  .table-thumb { width: 44px; height: 44px; }
+  footer { font-size: 0.78rem; margin-top: 2rem; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  body::before { animation: none; }
+}
+
+/* Print styles (for screenshots / paper diagnostic reports) */
+@media print {
+  body { background: #fff !important; color: #000 !important; }
+  body::before, body::after { display: none !important; }
+  .navbar-neon, footer, .btn, .loading-overlay { display: none !important; }
+  .glass-card, .stat-card {
+    background: #fff !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    color: #000 !important;
+    page-break-inside: avoid;
+  }
+  .gradient-text {
+    background: none !important;
+    -webkit-text-fill-color: #0a2540 !important;
+    color: #0a2540 !important;
+  }
+  .card-header-neon { background: #f1f5f9 !important; color: #000 !important; }
+  .info-row .label, .stat-label, .text-muted-2 { color: #555 !important; }
+  .info-row .value, .stat-value { color: #000 !important; }
+  .badge-benign { background: #d1fae5 !important; color: #065f46 !important; border-color: #065f46 !important; }
+  .badge-malign { background: #fee2e2 !important; color: #991b1b !important; border-color: #991b1b !important; }
+  a { color: #0a2540 !important; text-decoration: none !important; }
+  .result-image { box-shadow: none !important; border-color: #ccc !important; }
+}
+
+/* Browsers without backdrop-filter fallback */
+@supports not ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
+  .glass-card, .stat-card, .navbar-neon, .alert, .loading-overlay {
+    background: rgba(13, 17, 38, 0.92) !important;
+  }
 }
