@@ -6,6 +6,43 @@ Application web Flask permettant de classifier des lésions cutanées comme **B�
 
 ---
 
+## 📸 Captures d'écran
+
+### 🔐 Page de connexion
+Système d'authentification sécurisé avec thème **Dark Neon AI**.
+
+![Page de connexion](docs/screenshots/01-login.png)
+
+### 📊 Tableau de bord
+Statistiques globales en temps réel : total des analyses, cas bénins, cas malins, âge moyen.
+
+![Dashboard - statistiques](docs/screenshots/02-dashboard-stats.png)
+
+Visualisation de l'activité sur 7 jours, distribution bénin/malin, actions rapides et derniers patients.
+
+![Dashboard - graphiques et patients récents](docs/screenshots/03-dashboard-charts.png)
+
+### 🖼️ Nouvelle analyse
+Formulaire avec zone d'upload drag & drop pour analyser une image de lésion cutanée.
+
+![Page nouvelle analyse](docs/screenshots/04-predict.png)
+
+### 👥 Liste des patients
+Historique complet des diagnostics avec recherche, filtres, miniatures, niveau de confiance et actions (PDF, édition, suppression).
+
+![Liste des patients](docs/screenshots/05-patients.png)
+
+### 📄 Rapport PDF
+Rapport de diagnostic généré dynamiquement avec ReportLab — version cas **malin** (rouge) et cas **bénin** (vert).
+
+<p align="center">
+  <img src="docs/screenshots/06-pdf-malin.png" alt="Rapport PDF - cas malin" width="48%"/>
+  &nbsp;
+  <img src="docs/screenshots/07-pdf-benin.png" alt="Rapport PDF - cas bénin" width="48%"/>
+</p>
+
+---
+
 ## 🎯 Fonctionnalités
 
 - 🔐 **Authentification** par nom d'utilisateur / mot de passe avec gestion de session
